@@ -10,7 +10,7 @@ import java.util.*
 class Constants {
 
     companion object {
-        val REQUEST_CODE_ADD_NOTE = 1
+         var REQUEST_CODE_ADD_NOTE = 1
 
 
         fun getCurrentDate(): String =

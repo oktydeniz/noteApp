@@ -68,7 +68,6 @@ public class CreateNoteActivity extends AppCompatActivity {
         note.setSubTitle(String.valueOf(binding.inputNoteSubtitle.getText()));
         note.setNoteText(String.valueOf(binding.inputNoteText.getText()));
         note.setDateTime(String.valueOf(binding.textDateTime.getText()));
-
         createNoteViewModel.saveNote(note);
     }
     @Override
