@@ -7,4 +7,6 @@
     <string name="type_note_here">Type note here...</string>
     <string name="empty_title_error">Note Title can\'t be empty!</string>
     <string name="note_text_empty_error">Note can\'t be empty!</string>
+    <string name="miscellaneous">Miscellaneous</string>
+    <string name="pick_color">Pick Color</string>
 </resources>

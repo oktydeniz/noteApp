@@ -1,6 +1,8 @@
 package com.example.noteapp.adapter
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -27,5 +29,10 @@ class NoteAdapter(private val notes: List<Note>) : RecyclerView.Adapter<NoteAdap
         val item = notes[position]
         holder.view.note = item
         holder.view.executePendingBindings()
+
+        val gradientDrawable = holder.view.layoutNote.background as GradientDrawable
+        val color = if (item.color != "") Color.parseColor(item.color)
+            else Color.parseColor("#333333")
+        gradientDrawable.setColor(color)
     }
 }
