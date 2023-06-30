@@ -1,9 +1,11 @@
 package com.example.noteapp.adapter
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapp.databinding.ItemContainerNoteBinding
@@ -25,10 +27,21 @@ class NoteAdapter(private val notes: List<Note>) : RecyclerView.Adapter<NoteAdap
         return notes.size
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = notes[position]
         holder.view.note = item
         holder.view.executePendingBindings()
+
+        if (item.imagePath != "") {
+            holder.view.roundedImageNote.setImageBitmap(BitmapFactory.decodeFile(item.imagePath))
+            holder.view.roundedImageNote.visibility = View.VISIBLE
+        } else {
+            holder.view.roundedImageNote.visibility = View.GONE
+        }
 
         val gradientDrawable = holder.view.layoutNote.background as GradientDrawable
         val color = if (item.color != "") Color.parseColor(item.color)

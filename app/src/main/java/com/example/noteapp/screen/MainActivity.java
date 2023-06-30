@@ -18,6 +18,7 @@ import com.example.noteapp.adapter.NoteAdapter;
 import com.example.noteapp.databinding.ActivityMainBinding;
 import com.example.noteapp.models.Note;
 import com.example.noteapp.utils.Constants;
+import com.example.noteapp.utils.RequestReturnCodes;
 import com.example.noteapp.viewmodel.CreateNoteViewModel;
 import com.example.noteapp.viewmodel.MainActivityViewModel;
 
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
-        binding.notesRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        binding.notesRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         noteList = new ArrayList<>();
         adapter = new NoteAdapter(noteList);
         binding.notesRecyclerView.setAdapter(adapter);
@@ -70,8 +71,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.Companion.getREQUEST_CODE_ADD_NOTE()){
-            System.out.println("sdlksdşlfsf");
+        if (requestCode == RequestReturnCodes.REQUEST_CODE_ADD_NOTE){
         }
     }
 

@@ -1,13 +1,24 @@
 package com.example.noteapp.screen;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
@@ -17,6 +28,7 @@ import com.example.noteapp.R;
 import com.example.noteapp.databinding.ActivityCreateNoteBinding;
 import com.example.noteapp.models.Note;
 import com.example.noteapp.utils.Constants;
+import com.example.noteapp.utils.RequestReturnCodes;
 import com.example.noteapp.viewmodel.CreateNoteViewModel;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
@@ -25,6 +37,7 @@ public class CreateNoteActivity extends AppCompatActivity implements View.OnClic
     private ActivityCreateNoteBinding binding;
     private CreateNoteViewModel createNoteViewModel;
     private String selectedColor = "#333333";
+    private String selectedNoteImgPath = "";
 
     ImageView imageColor1;
     ImageView imageColor2;
@@ -84,6 +97,7 @@ public class CreateNoteActivity extends AppCompatActivity implements View.OnClic
         note.setNoteText(String.valueOf(binding.inputNoteText.getText()));
         note.setDateTime(String.valueOf(binding.textDateTime.getText()));
         note.setColor(selectedColor);
+        note.setImagePath(selectedNoteImgPath);
         createNoteViewModel.saveNote(note);
     }
 
@@ -109,7 +123,51 @@ public class CreateNoteActivity extends AppCompatActivity implements View.OnClic
        linearLayout.findViewById(R.id.viewColor3).setOnClickListener(this);
        linearLayout.findViewById(R.id.viewColor4).setOnClickListener(this);
        linearLayout.findViewById(R.id.viewColor5).setOnClickListener(this);
+
+       linearLayout.findViewById(R.id.layoutAddImage).setOnClickListener( v -> {
+           bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+           if (Build.VERSION.SDK_INT >= 33) {
+               if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                       != PackageManager.PERMISSION_GRANTED) {
+                   ActivityCompat.requestPermissions(CreateNoteActivity.this, new String[]{Manifest.permission.READ_MEDIA_IMAGES}, RequestReturnCodes.REQUEST_CODES_STORAGE_PERMISSION);
+               } else {
+                   selectImage();
+               }
+           } else {
+               if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                       != PackageManager.PERMISSION_GRANTED) {
+                   ActivityCompat.requestPermissions(CreateNoteActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, RequestReturnCodes.REQUEST_CODES_STORAGE_PERMISSION);
+               } else {
+                   selectImage();
+               }
+           }
+
+       });
     }
+
+    private void selectImage() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        if (intent.resolveActivity(getPackageManager()) != null){
+            startActivityForResultGetImg.launch(intent);
+        }
+    }
+
+
+    ActivityResultLauncher<Intent> startActivityForResultGetImg = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                Intent intent = result.getData();
+                if (intent != null) {
+                    Bitmap bitmap = Constants.Companion.getImgFromURI(result.getData(), CreateNoteActivity.this);
+                    if (bitmap != null) {
+                        binding.imageNote.setVisibility(View.VISIBLE);
+                        binding.imageNote.setImageBitmap(bitmap);
+
+                        selectedNoteImgPath = Constants.Companion.getFileFromURI(CreateNoteActivity.this, intent.getData());
+                    }
+                }
+            }
+    );
 
     @Override
     public void onClick(View view) {
