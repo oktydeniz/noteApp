@@ -1,28 +1,33 @@
 package com.example.noteapp.screen;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.LabeledIntent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.ClipDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.noteapp.R;
 import com.example.noteapp.databinding.ActivityCreateNoteBinding;
@@ -32,12 +37,16 @@ import com.example.noteapp.utils.RequestReturnCodes;
 import com.example.noteapp.viewmodel.CreateNoteViewModel;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
+import java.util.regex.Pattern;
+
 public class CreateNoteActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ActivityCreateNoteBinding binding;
     private CreateNoteViewModel createNoteViewModel;
     private String selectedColor = "#333333";
     private String selectedNoteImgPath = "";
+
+    private AlertDialog alertDialog;
 
     ImageView imageColor1;
     ImageView imageColor2;
@@ -98,6 +107,10 @@ public class CreateNoteActivity extends AppCompatActivity implements View.OnClic
         note.setDateTime(String.valueOf(binding.textDateTime.getText()));
         note.setColor(selectedColor);
         note.setImagePath(selectedNoteImgPath);
+
+        if (binding.layoutWebUrl.getVisibility() == View.VISIBLE){
+            note.setWebLink(binding.textWebUrl.getText().toString());
+        }
         createNoteViewModel.saveNote(note);
     }
 
@@ -142,6 +155,11 @@ public class CreateNoteActivity extends AppCompatActivity implements View.OnClic
                }
            }
 
+       });
+
+       linearLayout.findViewById(R.id.layoutAddUrl).setOnClickListener( v -> {
+           bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+           showAddUrlDialog();
        });
     }
 
@@ -225,6 +243,38 @@ public class CreateNoteActivity extends AppCompatActivity implements View.OnClic
     private void setSubTitleIndicatorColor() {
         GradientDrawable gradientDrawable = (GradientDrawable) findViewById(R.id.viewSubtitleIndicator).getBackground();
         gradientDrawable.setColor(Color.parseColor(selectedColor));
+    }
+
+    private void showAddUrlDialog() {
+        if (alertDialog == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            View view = LayoutInflater.from(this).inflate(R.layout.layout_add_url, findViewById(R.id.layoutAddUrlContainer));
+            builder.setView(view);
+
+            alertDialog = builder.create();
+
+            if (alertDialog.getWindow() != null) {
+                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }
+
+            final EditText inputUrl = view.findViewById(R.id.inputURL);
+            inputUrl.requestFocus();
+
+            view.findViewById(R.id.textAdd).setOnClickListener( v -> {
+                if (inputUrl.getText().toString().trim().isEmpty()){
+                    Constants.Companion.showToastS(CreateNoteActivity.this, getString(R.string.enter_url_error));
+                } else if (!Patterns.WEB_URL.matcher(inputUrl.getText().toString()).matches()){
+                    Constants.Companion.showToastL(CreateNoteActivity.this, getString(R.string.enter_valid_url_error));
+                } else {
+                    binding.textWebUrl.setText(inputUrl.getText().toString());
+                    binding.layoutWebUrl.setVisibility(View.VISIBLE);
+                    alertDialog.dismiss();
+                }
+            });
+            view.findViewById(R.id.textCancel).setOnClickListener(v -> alertDialog.dismiss());
+        }
+
+        alertDialog.show();
     }
 
     @Override

@@ -158,9 +158,36 @@
             android:text="@string/add_image"
             android:textSize="@dimen/_12ssp"
             android:textColor="@color/colorIcons"/>
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:id="@+id/layoutAddUrl"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_height="@dimen/_35sdp"
+        tools:ignore="UseCompoundDrawables">
 
-        
+        <ImageView
+            android:layout_width="@dimen/_22sdp"
+            android:layout_height="@dimen/_22sdp"
+            app:tint="@color/colorIcons"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_language"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:fontFamily="@font/ubuntu_medium"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:text="@string/add_url"
+
+            android:textColor="@color/colorIcons"
+            android:textSize="@dimen/_12ssp"
+            android:layout_marginStart="@dimen/_10sdp"/>
     </LinearLayout>
 
 

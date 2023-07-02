@@ -12,4 +12,10 @@
     <string name="add_note">Add Note</string>
     <string name="add_image">Add Image</string>
     <string name="permission_error">Permission Denied !</string>
+    <string name="add_url">Add URL</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="enter_url_error">Enter Url</string>
+    <string name="enter_valid_url_error">Enter valid URL</string>
 </resources>
