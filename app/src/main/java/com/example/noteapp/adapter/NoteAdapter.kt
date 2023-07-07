@@ -9,9 +9,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapp.databinding.ItemContainerNoteBinding
+import com.example.noteapp.listener.NoteListener
 import com.example.noteapp.models.Note
 
-class NoteAdapter(private val notes: List<Note>) : RecyclerView.Adapter<NoteAdapter.ViewHolder>() {
+class NoteAdapter(private val notes: List<Note>, private val listener: NoteListener) : RecyclerView.Adapter<NoteAdapter.ViewHolder>() {
 
     private lateinit var context: Context
     inner class ViewHolder(var view: ItemContainerNoteBinding): RecyclerView.ViewHolder(view.root)
@@ -35,6 +36,7 @@ class NoteAdapter(private val notes: List<Note>) : RecyclerView.Adapter<NoteAdap
         val item = notes[position]
         holder.view.note = item
         holder.view.executePendingBindings()
+        holder.view.layoutNote.setOnClickListener { listener.onNoteClicked(item, position) }
 
         if (item.imagePath != "") {
             holder.view.roundedImageNote.setImageBitmap(BitmapFactory.decodeFile(item.imagePath))

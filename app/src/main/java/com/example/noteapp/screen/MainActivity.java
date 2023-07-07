@@ -1,11 +1,15 @@
 package com.example.noteapp.screen;
 
+import static com.example.noteapp.utils.RequestReturnCodes.REQUEST_CODES_SHOW_NOTE;
+import static com.example.noteapp.utils.RequestReturnCodes.REQUEST_CODES_UPDATE_NOTE;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -16,6 +20,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.noteapp.adapter.NoteAdapter;
 import com.example.noteapp.databinding.ActivityMainBinding;
+import com.example.noteapp.listener.NoteListener;
 import com.example.noteapp.models.Note;
 import com.example.noteapp.utils.Constants;
 import com.example.noteapp.utils.RequestReturnCodes;
@@ -25,12 +30,13 @@ import com.example.noteapp.viewmodel.MainActivityViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NoteListener {
 
     private ActivityMainBinding binding;
     private MainActivityViewModel mainActivityViewModel;
     private NoteAdapter adapter;
     private List<Note> noteList;
+    private int noteClickedPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
         binding.notesRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         noteList = new ArrayList<>();
-        adapter = new NoteAdapter(noteList);
+        adapter = new NoteAdapter(noteList, this);
         binding.notesRecyclerView.setAdapter(adapter);
         fetchData();
         actions();
@@ -48,11 +54,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchData() {
         noteList.clear();
+        binding.notesRecyclerView.removeAllViews();
         mainActivityViewModel.fetchNotes();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fetchData();
     }
 
     private void actions(){
-        observers();
+        observers(RequestReturnCodes.REQUEST_CODES_SHOW_NOTE);
         binding.imageAddNoteMain.setOnClickListener( v -> {
             Intent intent = new Intent(MainActivity.this, CreateNoteActivity.class);
             startActivityForResultAddNote.launch(intent);
@@ -68,23 +80,31 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RequestReturnCodes.REQUEST_CODE_ADD_NOTE){
-        }
-    }
 
-    private void observers(){
+    ActivityResultLauncher<Intent> updateNoteActivityResult = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    observers(RequestReturnCodes.REQUEST_CODES_UPDATE_NOTE);
+                }
+            }
+    );
+
+    private void observers(int request){
         mainActivityViewModel.getNotes().observe(this, notes -> {
-            if (noteList.size() == 0){
-                noteList.addAll(notes);
-                adapter.notifyDataSetChanged();
-            } else {
+            noteList = null;
+            if (request == RequestReturnCodes.REQUEST_CODE_ADD_NOTE) {
                 noteList.add(0, notes.get(0));
                 adapter.notifyItemInserted(0);
+                binding.notesRecyclerView.smoothScrollToPosition(0);
+            } else if(request == REQUEST_CODES_SHOW_NOTE) {
+                noteList.addAll(notes);
+                adapter.notifyDataSetChanged();
+            } else if (request == REQUEST_CODES_UPDATE_NOTE){
+                noteList.remove(noteClickedPosition);
+                noteList.add(noteClickedPosition, notes.get(noteClickedPosition));
+                adapter.notifyItemChanged(noteClickedPosition);
             }
-            binding.notesRecyclerView.smoothScrollToPosition(0);
         });
     }
 
@@ -92,5 +112,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         binding = null;
+    }
+
+    @Override
+    public void onNoteClicked(@NonNull Note note, int position) {
+        noteClickedPosition = position;
+        Intent intent = new Intent(this, CreateNoteActivity.class);
+        intent.putExtra("isViewOrUpdate", true);
+        intent.putExtra("note", note);
+        updateNoteActivityResult.launch(intent);
+
     }
 }
